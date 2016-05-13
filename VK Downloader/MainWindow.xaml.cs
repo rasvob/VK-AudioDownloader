@@ -45,7 +45,7 @@ namespace VK_Downloader
 			_viewModel.StatusBarText = "Parsing links";
 			parser.DownloadCompleted += OnParsingComplete;
 			_parsingLinksDialogController =
-				await this.ShowProgressAsync("Parsing links", "It takes only a while...", false, new MetroDialogSettings()
+				await this.ShowProgressAsync("Parsing links", "It only takes a while...", false, new MetroDialogSettings()
 				{
 					AnimateHide = true,
 					AnimateShow = true
