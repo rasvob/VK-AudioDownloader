@@ -49,7 +49,12 @@ namespace VK_Downloader.Configuration
 				using(FileStream fs = new FileStream(_defaultFolderPath, FileMode.Open))
 				{
 					XmlSerializer xmlSerializer = new XmlSerializer(typeof(string));
-					return xmlSerializer.Deserialize(fs) as string;
+					var result  = xmlSerializer.Deserialize(fs) as string;
+					if (result == null)
+					{
+						throw new Exception("Null object reference");
+					}
+					return result;
 				}
 			}
 			catch (Exception e)
