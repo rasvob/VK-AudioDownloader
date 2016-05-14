@@ -19,6 +19,8 @@ using System.Windows.Shapes;
 using AngleSharp.Parser.Html;
 using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
+using VK_Downloader.Configuration;
+using VK_Downloader.ConfigurationView;
 using VK_Downloader.ViewModels;
 using VK_Downloader.VK;
 
@@ -35,13 +37,14 @@ namespace VK_Downloader
 		public MainWindow()
 		{
 			_viewModel = new MainWindowViewModel();
-			this.DataContext = _viewModel;
+			_viewModel.FileModels = ConfigurationRepository.LoadFileList();
+			DataContext = _viewModel;
 			InitializeComponent();
 		}
 
 		private async void buttonDownload_Click(object sender, RoutedEventArgs e)
 		{
-			var parser = new VkParser { Id = "9125493_217057" };
+			var parser = new VkParser { Id = "43722144_4912" };
 			_viewModel.StatusBarText = "Parsing links";
 			parser.DownloadCompleted += OnParsingComplete;
 			_parsingLinksDialogController =
@@ -51,17 +54,13 @@ namespace VK_Downloader
 					AnimateShow = true
 				});
 			_parsingLinksDialogController.SetIndeterminate();
-			_viewModel.FileModels.AddRange(await parser.ParseDownloadLinks());
+			var result = await parser.ParseDownloadLinks();
+			_viewModel.FileModels.AddRange(result);
+			foreach (SongViewModel model in _viewModel.FileModels)
+			{
+				Trace.WriteLine(model.FileName);
+			}
 			FileGrid.Items.Refresh();
-
-			//var file1 = res[0];
-			//WebRequest request = WebRequest.Create(file1.DownloadLink);
-			//var response = request.GetResponse();
-			//using (WebClient client = new WebClient())
-			//{
-			//	client.DownloadFile(file1.DownloadLink, $"{file1.FileName}{MimeTypes.MimeTypeMap.GetExtension(response.ContentType)}");
-			//}
-
 		}
 
 		private async void OnParsingComplete(object sender, EventArgs args)
@@ -80,12 +79,24 @@ namespace VK_Downloader
 			FileGrid.UnselectAll();
 		}
 
-		private void ButtonDownloadFile_OnClick(object sender, RoutedEventArgs e)
+		private async void ButtonDownloadFile_OnClick(object sender, RoutedEventArgs e)
 		{
-			_viewModel.FileModels.ForEach(t =>
+			if (_viewModel.FileModels.Count < 1)
 			{
-				Trace.WriteLine(t.SongName);
-			});
+				await this.ShowMessageAsync("No links to download", "Yout need to parse links first");
+				return;
+			}
+			VkDownloader downloader = new VkDownloader();
+			var filesToDownload = FileGrid.Items.Cast<SongViewModel>().ToList().Where(t => t.Status.Equals("Incomplete")).ToList();
+			downloader.AddFilesToQueue(filesToDownload);
+			downloader.CurrentSongDownloadProgressEvent += StatusProgressUpdate;
+			downloader.AllCompleteEvent += DownloaderOnAllCompleteEvent;
+			downloader.DownloadSongs();
+		}
+
+		private void DownloaderOnAllCompleteEvent(object sender, EventArgs eventArgs)
+		{
+			_viewModel.StatusBarText = "Ready";
 		}
 
 		private void DeleteMenuItem_OnClick(object sender, RoutedEventArgs e)
@@ -93,6 +104,46 @@ namespace VK_Downloader
 			var ids = FileGrid.SelectedItems.Cast<SongViewModel>().Select(s => s.Number);
 			_viewModel.FileModels.RemoveAll(t => ids.Any(s => s == t.Number));
 			FileGrid.Items.Refresh();
+		}
+
+		public void StatusProgressUpdate(object sender, ProgressArgs args)
+		{
+			_viewModel.StatusBarText = $"{args.ViewModel.Artist} - {args.ViewModel.SongName} ({args.Percentage}%)";
+		}
+
+		private async void ButtonDownloadFilesSelected_OnClick(object sender, RoutedEventArgs e)
+		{
+			if(_viewModel.FileModels.Count < 1)
+			{
+				await this.ShowMessageAsync("No links to download", "Yout need to parse links first");
+				return;
+			}
+			VkDownloader downloader = new VkDownloader();
+			downloader.AddFilesToQueue(FileGrid.SelectedItems.Cast<SongViewModel>().ToList());
+			downloader.CurrentSongDownloadProgressEvent += StatusProgressUpdate;
+			downloader.AllCompleteEvent += DownloaderOnAllCompleteEvent;
+			downloader.DownloadSongs();
+		}
+
+		private void MetroWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+		{
+			var fileList = _viewModel.FileModels.Where(t => t.Status.Equals("Incomplete")).ToList();
+			ConfigurationRepository.SaveFileList(fileList);
+			ConfigurationRepository.SaveDefaultDownloadFolderLocation(new SettingsWindowViewModel().FolderPath);
+		}
+
+		private void FileGrid_OnLoadingRow(object sender, DataGridRowEventArgs e)
+		{
+			e.Row.Header = (e.Row.GetIndex() + 1).ToString();
+		}
+
+		private void MenuItemSettings_OnClick(object sender, RoutedEventArgs e)
+		{
+			SettingsWindow settingsWindow = new SettingsWindow {Owner = this};
+			settingsWindow.BorderThickness = new Thickness(1);
+			settingsWindow.GlowBrush = null;
+			settingsWindow.SetResourceReference(MetroWindow.BorderBrushProperty, "AccentColorBrush");
+			settingsWindow.Show();
 		}
 	}
 }

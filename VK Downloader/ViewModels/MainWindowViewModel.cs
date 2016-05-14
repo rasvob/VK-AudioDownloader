@@ -9,7 +9,7 @@ namespace VK_Downloader.ViewModels
 {
 	public class MainWindowViewModel: INotifyPropertyChanged
 	{
-		private string _vkPostId;
+		private string _vkPostId = "43722144_5357";
 		private string _statusBarText = "Ready";
 		private List<SongViewModel> _fileModels = new List<SongViewModel>();
 
@@ -45,7 +45,6 @@ namespace VK_Downloader.ViewModels
 				OnPropertyChanged();
 			}
 		}
-
 
 		public event PropertyChangedEventHandler PropertyChanged;
 

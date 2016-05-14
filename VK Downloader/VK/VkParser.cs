@@ -55,18 +55,18 @@ namespace VK_Downloader.VK
 					fileModel.SongName = songName?.InnerHtml;
 					links.Add(fileModel);
 				}
-				catch(Exception ex)
+				catch(Exception)
 				{
 					SongViewModel.NumberHolder--;
 				}
 
 			}
-			await Task.Factory.StartNew(() => GetFileSizes(links));
+			await Task.Factory.StartNew(() => GetFileSizesAndExtintions(links));
 			OnDownloadCompleted();
 			return links;
 		}
 
-		private void GetFileSizes(List<SongViewModel> songs)
+		private void GetFileSizesAndExtintions(List<SongViewModel> songs)
 		{
 			foreach (SongViewModel songViewModel in songs)
 			{
@@ -81,9 +81,12 @@ namespace VK_Downloader.VK
 						songViewModel.Size = Math.Truncate(fileSize.MegaBytes * 100) / 100;
 						songViewModel.RealSize = contentLenght;
 					}
+					songViewModel.Extintion = MimeTypes.MimeTypeMap.GetExtension(response.ContentType);
 				}
 			}
 		}
+
+		
 
 		private string DownloadPage()
 		{
@@ -103,7 +106,6 @@ namespace VK_Downloader.VK
 						content = reader.ReadToEnd();
 					}
 				}
-			
 				finally
 				{
 					phantomJs.Abort();
@@ -111,8 +113,6 @@ namespace VK_Downloader.VK
 			}
 			return content;
 		}
-
-
 
 		protected virtual void OnDownloadCompleted()
 		{

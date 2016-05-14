@@ -9,26 +9,31 @@
         mc:Ignorable="d"
 		Icon="icon.ico"
 		WindowStartupLocation="CenterScreen"
-        Title="VK Downloader" Height="426.745" Width="734.587" Margin="0"
-                      d:DataContext="{d:DesignInstance viewModels:MainWindowViewModel}">
+        Title="VK Downloader" Margin="0"
+                      d:DataContext="{d:DesignInstance viewModels:MainWindowViewModel}" Closing="MetroWindow_Closing">
 	<Grid>
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto"></RowDefinition>
 			<RowDefinition Height="Auto"></RowDefinition>
-			<RowDefinition Height="*"></RowDefinition>
 			<RowDefinition Height="Auto"></RowDefinition>
+			<RowDefinition Height="*"></RowDefinition>
 			<RowDefinition Height="Auto"></RowDefinition>
 		</Grid.RowDefinitions>
 		<Menu x:Name="MainMenu" Grid.Row="0" Margin="5">
-			<MenuItem Header="Settings "/>
+			<MenuItem Header="Settings" Name="MenuItemSettings" Click="MenuItemSettings_OnClick"/>
 		</Menu>
 		<TextBox x:Name="TextBoxId" TextWrapping="NoWrap"  Margin="10,0,150,0" Grid.Row="1"
 			         HorizontalContentAlignment="Stretch" MinHeight="25"  controls:TextBoxHelper.Watermark="VK Post ID (ex. 9125493_217057)" controls:TextBoxHelper.IsWaitingForData="True"
-                         controls:TextBoxHelper.UseFloatingWatermark="True" Text="{Binding VkPostId, Mode=TwoWay}"/>
+                         controls:TextBoxHelper.UseFloatingWatermark="True" controls:TextBoxHelper.ClearTextButton="True" Text="{Binding VkPostId, Mode=TwoWay}"/>
 		<Button x:Name="ButtonDownload" Content="Get download links" Grid.Row="1"
 			        Click="buttonDownload_Click" HorizontalContentAlignment="Center" HorizontalAlignment="Right" Margin="0,0,10,0" Padding="5,0,5,0"/>
 
-		<DataGrid Name="FileGrid" Grid.Row="2" Margin="10" 
+		<StackPanel Orientation="Horizontal" Grid.Row="2" Margin="10, 10, 10, 0">
+			<Button x:Name="ButtonDownloadFilesSelected" Content="Download selected" Click="ButtonDownloadFilesSelected_OnClick" Margin="0,0,10,0"/>
+			<Button x:Name="ButtonDownloadFile" Content="Download all" Click="ButtonDownloadFile_OnClick" Margin="0,0,10,0"/>
+		</StackPanel>
+
+		<DataGrid Name="FileGrid" Grid.Row="3" Margin="10" 
 				  ItemsSource="{Binding Path=FileModels}" 
 				  AutoGenerateColumns="False" 
 				  CanUserResizeRows="True" 
@@ -38,6 +43,7 @@
 				  SelectionUnit="FullRow"
 				  CanUserAddRows="False"
 				  CanUserDeleteRows="True"
+				  LoadingRow="FileGrid_OnLoadingRow"
 				  >
 			<DataGrid.Columns>
 				<DataGridCheckBoxColumn Header="Selected" Binding="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=IsSelected, Mode=TwoWay}" 
@@ -47,6 +53,7 @@
 				<DataGridTextColumn IsReadOnly="True" Binding="{Binding Artist}" Header="Artist"></DataGridTextColumn>
 				<DataGridTextColumn IsReadOnly="True" Binding="{Binding SongName}" Header="Title"></DataGridTextColumn>
 				<DataGridTextColumn IsReadOnly="True" Binding="{Binding Size}" Header="Size (MB)"></DataGridTextColumn>
+				<DataGridTextColumn IsReadOnly="True" Binding="{Binding CompletedMegabytes}" Header="Completed (MB)"></DataGridTextColumn>
 				<DataGridTemplateColumn Header="Progress" Width="*">
 					<DataGridTemplateColumn.CellTemplate>
 						<DataTemplate>
@@ -56,7 +63,7 @@
                                                        VerticalAlignment="Center"
                                                        Background="Transparent"
                                                        Foreground="{DynamicResource AccentColorBrush}"
-                                                       Maximum="{Binding Size}"
+                                                       Maximum="{Binding RealSize}"
                                                        Minimum="0"
                                                        Value="{Binding CompletedBytes}" />
 						</DataTemplate>
@@ -72,25 +79,9 @@
 				</ContextMenu>
 			</DataGrid.ContextMenu>
 		</DataGrid>
-		<Button Grid.Row="3" x:Name="ButtonDownloadFile" Content="Download files" Margin="10,0,10,10" Click="ButtonDownloadFile_OnClick"/>
-		
+
 		<StatusBar Grid.Row="4">
-			<StatusBarItem Content="{Binding StatusBarText, Mode=TwoWay}" />
+			<StatusBarItem Margin="5,0,0,0" Content="{Binding StatusBarText, Mode=TwoWay}" />
 		</StatusBar>
 	</Grid>
 </controls:MetroWindow>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

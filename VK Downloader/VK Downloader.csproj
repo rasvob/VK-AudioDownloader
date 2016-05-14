@@ -47,6 +47,10 @@
       <HintPath>..\packages\ByteSize.1.1.2\lib\dotnet\ByteSizeLib.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Gat.Controls.OpenDialog, Version=1.1.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\OpenDialog.1.1.1\lib\net45\Gat.Controls.OpenDialog.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Jint, Version=2.7.1.0, Culture=neutral, PublicKeyToken=2e92ba9c8d81157f, processorArchitecture=MSIL">
       <HintPath>..\packages\Jint.2.8\lib\portable-net40+sl50+win+WindowsPhoneApp81+wp80\Jint.dll</HintPath>
       <Private>True</Private>
@@ -87,12 +91,23 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ConfigurationView\SettingsWindow.xaml.cs">
+      <DependentUpon>SettingsWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Configuration\ConfigurationRepository.cs" />
     <Compile Include="Logging\FileLogger.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
+    <Compile Include="ViewModels\SettingsWindowViewModel.cs" />
     <Compile Include="ViewModels\SongViewModel.cs" />
     <Compile Include="VK\FileModel.cs" />
+    <Compile Include="VK\ProgressArgs.cs" />
+    <Compile Include="VK\VkDownloader.cs" />
     <Compile Include="VK\VkParser.cs" />
+    <Page Include="ConfigurationView\SettingsWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

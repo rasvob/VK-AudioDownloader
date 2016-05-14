@@ -1,4 +1,7 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Net;
 using System.Runtime.CompilerServices;
 using VK_Downloader.Annotations;
 
@@ -6,13 +9,15 @@ namespace VK_Downloader.ViewModels
 {
 	public class SongViewModel: INotifyPropertyChanged
 	{
-		private double _size;
+		private double _size = 0;
 		private long _completedBytes = 0;
 		private string _artist;
 		private string _songName;
 		private string _status = "Incomplete";
 		private int _number;
 		private long _realSize;
+		private string _extintion;
+		private double _completedMegabytes = 0;
 		public static int NumberHolder = 1;
 
 		public string Status
@@ -26,8 +31,20 @@ namespace VK_Downloader.ViewModels
 			}
 		}
 
+		public string FileName => $"{_artist.TrimEnd(' ')} - {_songName.TrimEnd(' ')}{_extintion}";
+
 		public int Number => _number;
-		
+
+		public string Extintion
+		{
+			get { return _extintion; }
+			set
+			{
+				if (value == _extintion) return;
+				_extintion = value;
+				OnPropertyChanged();
+			}
+		}
 
 		public string Artist
 		{
@@ -97,12 +114,35 @@ namespace VK_Downloader.ViewModels
 			}
 		}
 
+		public double CompletedMegabytes
+		{
+			get { return _completedMegabytes; }
+			set
+			{
+				if (value.Equals(_completedMegabytes)) return;
+				_completedMegabytes = value;
+				OnPropertyChanged();
+			}
+		}
+
 		public event PropertyChangedEventHandler PropertyChanged;
 
 		[NotifyPropertyChangedInvocator]
 		protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
 		{
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+		}
+
+		public void ClientOnDownloadProgressChanged(object sender, DownloadProgressChangedEventArgs downloadProgressChangedEventArgs)
+		{
+			CompletedBytes = downloadProgressChangedEventArgs.BytesReceived;
+			var fileSize = ByteSizeLib.ByteSize.FromBytes(downloadProgressChangedEventArgs.BytesReceived);
+			CompletedMegabytes = Math.Truncate(fileSize.MegaBytes * 100) / 100;
+		}
+
+		public void ClientOnDownloadFileCompleted(object sender, AsyncCompletedEventArgs asyncCompletedEventArgs)
+		{
+			Status = "Complete";
 		}
 	}
 }
