@@ -23,7 +23,7 @@ namespace VK_Downloader.Configuration
 		{
 			if (!File.Exists(_fileListPath))
 			{
-				return null;
+				return new List<SongViewModel>();
 			}
 			using(FileStream fs = new FileStream(_fileListPath, FileMode.Open))
 			{
@@ -43,7 +43,6 @@ namespace VK_Downloader.Configuration
 
 		public static string LoadDefaultDownloadFolderLocation()
 		{
-
 			try
 			{
 				using(FileStream fs = new FileStream(_defaultFolderPath, FileMode.Open))
@@ -59,8 +58,13 @@ namespace VK_Downloader.Configuration
 			}
 			catch (Exception)
 			{
-				return string.Empty;
+				return GetDefaultDownloadsFolderLocation();
 			}
+		}
+
+		private static string GetDefaultDownloadsFolderLocation()
+		{
+			return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
 		}
 	}
 }

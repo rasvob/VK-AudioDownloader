@@ -44,6 +44,7 @@
 				  CanUserAddRows="False"
 				  CanUserDeleteRows="True"
 				  LoadingRow="FileGrid_OnLoadingRow"
+				  MouseDoubleClick="FileGrid_OnMouseDoubleClick"
 				  >
 			<DataGrid.Columns>
 				<DataGridCheckBoxColumn Header="Selected" Binding="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=IsSelected, Mode=TwoWay}" 

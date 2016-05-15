@@ -88,6 +88,7 @@ namespace VK_Downloader
 				return;
 			}
 			VkDownloader downloader = new VkDownloader();
+			FileGrid.CanUserDeleteRows = false;
 			var filesToDownload = FileGrid.Items.Cast<SongViewModel>().ToList().Where(t => t.Status.Equals("Incomplete")).ToList();
 			downloader.AddFilesToQueue(filesToDownload);
 			downloader.CurrentSongDownloadProgressEvent += StatusProgressUpdate;
@@ -98,6 +99,7 @@ namespace VK_Downloader
 		private void DownloaderOnAllCompleteEvent(object sender, EventArgs eventArgs)
 		{
 			_viewModel.StatusBarText = "Ready";
+			Dispatcher.Invoke(new Action(() => FileGrid.CanUserDeleteRows = true));
 		}
 
 		private void DeleteMenuItem_OnClick(object sender, RoutedEventArgs e)
@@ -120,6 +122,7 @@ namespace VK_Downloader
 				return;
 			}
 			VkDownloader downloader = new VkDownloader();
+			FileGrid.CanUserDeleteRows = false;
 			downloader.AddFilesToQueue(FileGrid.SelectedItems.Cast<SongViewModel>().ToList());
 			downloader.CurrentSongDownloadProgressEvent += StatusProgressUpdate;
 			downloader.AllCompleteEvent += DownloaderOnAllCompleteEvent;
@@ -147,7 +150,22 @@ namespace VK_Downloader
 				GlowBrush = null
 			};
 			settingsWindow.SetResourceReference(MetroWindow.BorderBrushProperty, "AccentColorBrush");
+			settingsWindow.Closing += (o, args) =>
+			{
+				settingsWindow.Owner = null;
+			};
 			settingsWindow.Show();
+		}
+
+
+		private void FileGrid_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
+		{
+			var selectedItem = FileGrid.SelectedItem as SongViewModel;
+			if (selectedItem == null || selectedItem.Status.Equals("Incomplete"))
+			{
+				return;
+			}
+			System.Diagnostics.Process.Start("explorer.exe", ConfigurationRepository.LoadDefaultDownloadFolderLocation());
 		}
 	}
 }

@@ -25,8 +25,7 @@ namespace VK_Downloader.ViewModels
 
 		public SettingsWindowViewModel()
 		{
-			var folder = ConfigurationRepository.LoadDefaultDownloadFolderLocation();
-			FolderPath = folder.Equals(string.Empty) ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads") : folder;
+			FolderPath = ConfigurationRepository.LoadDefaultDownloadFolderLocation();
 		}
 
 		public event PropertyChangedEventHandler PropertyChanged;
