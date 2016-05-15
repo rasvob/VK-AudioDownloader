@@ -39,7 +39,13 @@ namespace VK_Downloader
 			_viewModel = new MainWindowViewModel();
 			_viewModel.FileModels = ConfigurationRepository.LoadFileList();
 			DataContext = _viewModel;
+			DesignInit();
 			InitializeComponent();
+		}
+
+		private void DesignInit()
+		{
+			SetResourceReference(MetroWindow.BorderBrushProperty, "AccentColorBrush");
 		}
 
 		private async void buttonDownload_Click(object sender, RoutedEventArgs e)

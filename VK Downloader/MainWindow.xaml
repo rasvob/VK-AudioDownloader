@@ -10,7 +10,9 @@
 		Icon="icon.ico"
 		WindowStartupLocation="CenterScreen"
         Title="VK Downloader" Margin="0"
-                      d:DataContext="{d:DesignInstance viewModels:MainWindowViewModel}" Closing="MetroWindow_Closing">
+        d:DataContext="{d:DesignInstance viewModels:MainWindowViewModel}" 
+		BorderThickness="1"
+		Closing="MetroWindow_Closing" >
 	<Grid>
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto"></RowDefinition>
