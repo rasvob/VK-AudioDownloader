@@ -44,7 +44,7 @@ namespace VK_Downloader
 
 		private async void buttonDownload_Click(object sender, RoutedEventArgs e)
 		{
-			var parser = new VkParser { Id = "43722144_4912" };
+			var parser = new VkParser { Id = _viewModel.VkPostId };
 			_viewModel.StatusBarText = "Parsing links";
 			parser.DownloadCompleted += OnParsingComplete;
 			_parsingLinksDialogController =
@@ -66,6 +66,7 @@ namespace VK_Downloader
 		private async void OnParsingComplete(object sender, EventArgs args)
 		{
 			_viewModel.StatusBarText = "Ready";
+			_viewModel.VkPostId = string.Empty;
 			await _parsingLinksDialogController.CloseAsync();
 		}
 
@@ -83,7 +84,7 @@ namespace VK_Downloader
 		{
 			if (_viewModel.FileModels.Count < 1)
 			{
-				await this.ShowMessageAsync("No links to download", "Yout need to parse links first");
+				await this.ShowMessageAsync("No links to download", "You need to parse links first");
 				return;
 			}
 			VkDownloader downloader = new VkDownloader();
@@ -115,7 +116,7 @@ namespace VK_Downloader
 		{
 			if(_viewModel.FileModels.Count < 1)
 			{
-				await this.ShowMessageAsync("No links to download", "Yout need to parse links first");
+				await this.ShowMessageAsync("No links to download", "You need to parse links first");
 				return;
 			}
 			VkDownloader downloader = new VkDownloader();
@@ -139,9 +140,12 @@ namespace VK_Downloader
 
 		private void MenuItemSettings_OnClick(object sender, RoutedEventArgs e)
 		{
-			SettingsWindow settingsWindow = new SettingsWindow {Owner = this};
-			settingsWindow.BorderThickness = new Thickness(1);
-			settingsWindow.GlowBrush = null;
+			SettingsWindow settingsWindow = new SettingsWindow
+			{
+				Owner = this,
+				BorderThickness = new Thickness(1),
+				GlowBrush = null
+			};
 			settingsWindow.SetResourceReference(MetroWindow.BorderBrushProperty, "AccentColorBrush");
 			settingsWindow.Show();
 		}

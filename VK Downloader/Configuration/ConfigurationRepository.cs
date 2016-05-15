@@ -57,7 +57,7 @@ namespace VK_Downloader.Configuration
 					return result;
 				}
 			}
-			catch (Exception e)
+			catch (Exception)
 			{
 				return string.Empty;
 			}

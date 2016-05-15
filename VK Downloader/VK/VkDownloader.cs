@@ -23,7 +23,7 @@ namespace VK_Downloader.VK
 		public event EventHandler<ProgressArgs> CurrentSongDownloadProgressEvent;
 		public event EventHandler AllCompleteEvent;
 
-		private string _downloadFolderPath = ConfigurationRepository.LoadDefaultDownloadFolderLocation();
+		private readonly string _downloadFolderPath = ConfigurationRepository.LoadDefaultDownloadFolderLocation();
 
 		public VkDownloader()
 		{
