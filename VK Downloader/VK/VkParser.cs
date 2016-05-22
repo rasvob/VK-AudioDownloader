@@ -25,9 +25,11 @@ namespace VK_Downloader.VK
 			{
 				_id = value;
 				_link = @"http://vk.com/wall-" + value;
+				_altLink = @"http://vk.com/wall" + value;
 			}
 		}
 
+		private string _altLink;
 		private string _link;
 		private string _id;
 
@@ -36,9 +38,10 @@ namespace VK_Downloader.VK
 		public async Task<List<SongViewModel>> ParseDownloadLinks()
 		{
 			List<SongViewModel> links = new List<SongViewModel>();
-			string content = await Task.Factory.StartNew(DownloadPage);
+			string content = await GetParseContent();
 			var parser = new HtmlParser();
 			var document = parser.Parse(content);
+
 			var trs = document.QuerySelectorAll("div.audio div.area table tbody tr");
 
 			foreach(var element in trs)
@@ -86,9 +89,20 @@ namespace VK_Downloader.VK
 			}
 		}
 
-		
+		private async Task<string> GetParseContent()
+		{
+			var content = await Task.Factory.StartNew(() => DownloadPage(_link));
+			HtmlParser parser = new HtmlParser();
+			var document = parser.Parse(content);
+			var error = document.QuerySelector("h1").InnerHtml;
+			if(error != null)
+			{
+				return await Task.Factory.StartNew(() => DownloadPage(_altLink));
+			}
+			return content;
+		}
 
-		private string DownloadPage()
+		private string DownloadPage(string link)
 		{
 			PhantomJS phantomJs = new PhantomJS();
 			string content;
@@ -99,7 +113,7 @@ namespace VK_Downloader.VK
 					phantomJs.RunScript(
 						string.Format(
 							"var system = require('system'); var page = require('webpage').create(); page.open('{0}', function() {{ system.stdout.writeLine(page.content); phantom.exit(); }});",
-							_link), null, null, outStream);
+							link), null, null, outStream);
 					outStream.Seek(0, SeekOrigin.Begin);
 					using (StreamReader reader = new StreamReader(outStream))
 					{
