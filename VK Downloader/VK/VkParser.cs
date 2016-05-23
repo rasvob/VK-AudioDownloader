@@ -38,6 +38,7 @@ namespace VK_Downloader.VK
 		public async Task<List<SongViewModel>> ParseDownloadLinks()
 		{
 			List<SongViewModel> links = new List<SongViewModel>();
+			//string content = await Task.Factory.StartNew(() => DownloadPage(_link));
 			string content = await GetParseContent();
 			var parser = new HtmlParser();
 			var document = parser.Parse(content);
@@ -95,9 +96,9 @@ namespace VK_Downloader.VK
 			HtmlParser parser = new HtmlParser();
 			var document = parser.Parse(content);
 			var error = document.QuerySelector("h1").InnerHtml;
-			if(error != null)
+			if(error != string.Empty)
 			{
-				return await Task.Factory.StartNew(() => DownloadPage(_altLink));
+				content = await Task.Factory.StartNew(() => DownloadPage(_altLink));
 			}
 			return content;
 		}
