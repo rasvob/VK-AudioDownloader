@@ -50,6 +50,11 @@ namespace VK_Downloader
 
 		private async void buttonDownload_Click(object sender, RoutedEventArgs e)
 		{
+			await ParseLinks();
+		}
+
+		private async Task ParseLinks()
+		{
 			var parser = new VkParser { Id = _viewModel.VkPostId };
 			_viewModel.StatusBarText = "Parsing links";
 			parser.DownloadCompleted += OnParsingComplete;
@@ -62,11 +67,14 @@ namespace VK_Downloader
 			_parsingLinksDialogController.SetIndeterminate();
 			var result = await parser.ParseDownloadLinks();
 			_viewModel.FileModels.AddRange(result);
-			foreach (SongViewModel model in _viewModel.FileModels)
+			foreach(SongViewModel model in _viewModel.FileModels)
 			{
 				Trace.WriteLine(model.FileName);
 			}
-			FileGrid.Items.Refresh();
+			Dispatcher.Invoke(() =>
+			{
+				FileGrid.Items.Refresh();
+			});
 		}
 
 		private async void OnParsingComplete(object sender, EventArgs args)

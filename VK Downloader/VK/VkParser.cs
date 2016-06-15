@@ -65,6 +65,7 @@ namespace VK_Downloader.VK
 				}
 
 			}
+			links = ClearedDownloadLinks(links);
 			await Task.Factory.StartNew(() => GetFileSizesAndExtintions(links));
 			OnDownloadCompleted();
 			return links;
@@ -128,6 +129,15 @@ namespace VK_Downloader.VK
 			}
 			return content;
 		}
+
+		private List<SongViewModel> ClearedDownloadLinks(List<SongViewModel> links)
+		{
+			return links.Where(t =>
+			{
+				Uri tryUri;
+				return Uri.TryCreate(t.DownloadLink, UriKind.RelativeOrAbsolute, out tryUri);
+			}).ToList();
+		} 
 
 		protected virtual void OnDownloadCompleted()
 		{
