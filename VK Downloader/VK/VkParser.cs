@@ -65,7 +65,8 @@ namespace VK_Downloader.VK
 				}
 
 			}
-			links = ClearedDownloadLinks(links);
+
+			ClearDownloadLinks(ref links);
 			await Task.Factory.StartNew(() => GetFileSizesAndExtintions(links));
 			OnDownloadCompleted();
 			return links;
@@ -130,14 +131,40 @@ namespace VK_Downloader.VK
 			return content;
 		}
 
-		private List<SongViewModel> ClearedDownloadLinks(List<SongViewModel> links)
+		private void ClearDownloadLinks(ref List<SongViewModel> links)
 		{
-			return links.Where(t =>
+			//foreach (SongViewModel link in links)
+			//{
+			//	Uri uri;
+			//	bool res = Uri.TryCreate(link.DownloadLink, UriKind.Absolute, out uri);
+			//	if (res)
+			//	{
+			//		if (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps)
+			//		{
+			//			Trace.WriteLine("then: "+ link.DownloadLink);
+			//		}
+			//		else
+			//		{
+			//			Trace.WriteLine("thenNONIF: " + link.DownloadLink);
+			//		}
+			//	}
+			//	else
+			//	{
+			//		Trace.WriteLine("else: " + link.DownloadLink);
+			//	}
+			//	//Trace.WriteLine(link.DownloadLink);
+			//}
+
+			links.RemoveAll(t =>
 			{
-				Uri tryUri;
-				return Uri.TryCreate(t.DownloadLink, UriKind.RelativeOrAbsolute, out tryUri);
-			}).ToList();
-		} 
+				Uri uri;
+				bool res = Uri.TryCreate(t.DownloadLink, UriKind.Absolute, out uri);
+				if (!res) return true;
+				return !(uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
+			});
+			
+
+		}
 
 		protected virtual void OnDownloadCompleted()
 		{
