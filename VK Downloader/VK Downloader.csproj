@@ -138,6 +138,7 @@
     <Compile Include="VK\FileModel.cs" />
     <Compile Include="VK\ProgressArgs.cs" />
     <Compile Include="VK\VkDownloader.cs" />
+    <Compile Include="VK\VkDownloadLinkObtainer.cs" />
     <Compile Include="VK\VkParser.cs" />
     <Page Include="ConfigurationView\SettingsWindow.xaml">
       <SubType>Designer</SubType>

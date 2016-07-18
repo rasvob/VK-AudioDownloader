@@ -37,6 +37,7 @@ namespace VK_Downloader
 		public MainWindow()
 		{
 			_viewModel = new MainWindowViewModel();
+			_viewModel.VkPostId = "8690656_223973";
 			_viewModel.FileModels = ConfigurationRepository.LoadFileList();
 			DataContext = _viewModel;
 			DesignInit();
@@ -60,6 +61,8 @@ namespace VK_Downloader
 					AnimateShow = true
 				});
 			_parsingLinksDialogController.SetIndeterminate();
+			VkDownloadLinkObtainer obt = new VkDownloadLinkObtainer("2000356709_456239124");
+			await obt.ObtainDownloadLink();
 			var result = await parser.ParseDownloadLinks();
 			_viewModel.FileModels.AddRange(result);
 			foreach(SongViewModel model in _viewModel.FileModels)

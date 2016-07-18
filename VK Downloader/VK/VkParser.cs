@@ -9,6 +9,7 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using AngleSharp.Dom;
+using AngleSharp.Dom.Html;
 using AngleSharp.Extensions;
 using AngleSharp.Parser.Html;
 using NReco.PhantomJS;
@@ -43,16 +44,30 @@ namespace VK_Downloader.VK
 			var parser = new HtmlParser();
 			var document = parser.Parse(content);
 
+			//var trs = document.QuerySelectorAll("div.wall_audio_rows div.audio_row");
 			var trs = document.QuerySelectorAll("div.wall_audio_rows div.audio_row");
 
-			foreach(var element in trs)
+
+			var htmlElement = trs[0] as IHtmlDivElement;
+			var audio = htmlElement.Dataset["audio"];
+			var full_id = htmlElement.Dataset["full-id"];
+			var downloadLinkObtainer = new VkDownloadLinkObtainer(full_id);
+			var link = downloadLinkObtainer.ObtainDownloadLink();
+
+			foreach(IElement element in trs)
 			{
+				//var htmlElement = element as IHtmlDivElement;
+				//var audio = htmlElement.Dataset["audio"];
+				//var full_id = htmlElement.Dataset["full-id"];
+				//var downloadLinkObtainer = new VkDownloadLinkObtainer(full_id);
+				//var link = downloadLinkObtainer.ObtainDownloadLink();
 				try
 				{
 					var fileModel = new SongViewModel();
-					fileModel.DownloadLink = input.Attributes.GetNamedItem("value").Value;
-					fileModel.Artist = title?.InnerHtml;
-					fileModel.SongName = songName?.InnerHtml;
+
+					//fileModel.DownloadLink = input.Attributes.GetNamedItem("value").Value;
+					//fileModel.Artist = title?.InnerHtml;
+					//fileModel.SongName = songName?.InnerHtml;
 					links.Add(fileModel);
 				}
 				catch(Exception)
@@ -133,28 +148,6 @@ namespace VK_Downloader.VK
 
 		private void ClearDownloadLinks(ref List<SongViewModel> links)
 		{
-			//foreach (SongViewModel link in links)
-			//{
-			//	Uri uri;
-			//	bool res = Uri.TryCreate(link.DownloadLink, UriKind.Absolute, out uri);
-			//	if (res)
-			//	{
-			//		if (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps)
-			//		{
-			//			Trace.WriteLine("then: "+ link.DownloadLink);
-			//		}
-			//		else
-			//		{
-			//			Trace.WriteLine("thenNONIF: " + link.DownloadLink);
-			//		}
-			//	}
-			//	else
-			//	{
-			//		Trace.WriteLine("else: " + link.DownloadLink);
-			//	}
-			//	//Trace.WriteLine(link.DownloadLink);
-			//}
-
 			links.RemoveAll(t =>
 			{
 				Uri uri;
