@@ -24,8 +24,8 @@ namespace VK_Downloader.VK
 			set
 			{
 				_id = value;
-				_link = @"http://vk.com/wall-" + value;
-				_altLink = @"http://vk.com/wall" + value;
+				_link = @"http://new.vk.com/wall-" + value;
+				_altLink = @"http://new.vk.com/wall" + value;
 			}
 		}
 
@@ -43,14 +43,10 @@ namespace VK_Downloader.VK
 			var parser = new HtmlParser();
 			var document = parser.Parse(content);
 
-			var trs = document.QuerySelectorAll("div.audio div.area table tbody tr");
+			var trs = document.QuerySelectorAll("div.wall_audio_rows div.audio_row");
 
 			foreach(var element in trs)
 			{
-				var input = element.QuerySelector("td").QuerySelector("input");
-				var info = element.QuerySelector("td.info")?.QuerySelector("div.title_wrap");
-				var title = info?.QuerySelector("a");
-				var songName = info?.QuerySelector("span.title");
 				try
 				{
 					var fileModel = new SongViewModel();
@@ -97,8 +93,12 @@ namespace VK_Downloader.VK
 			var content = await Task.Factory.StartNew(() => DownloadPage(_link));
 			HtmlParser parser = new HtmlParser();
 			var document = parser.Parse(content);
-			var error = document.QuerySelector("h1").InnerHtml;
-			if(error != string.Empty)
+			var error = document.QuerySelector("div.message_page_title");
+			if (error == null)
+			{
+				return content;
+			}
+			else 
 			{
 				content = await Task.Factory.StartNew(() => DownloadPage(_altLink));
 			}
