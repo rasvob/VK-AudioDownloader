@@ -119,9 +119,6 @@ namespace VK_Downloader.VK
 				res = match.Groups[2].Value;
 				return true;
 			}
-
-			
-
 			return false;
 		}
 
