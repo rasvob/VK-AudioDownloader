@@ -13,7 +13,8 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     using System.Windows.Media.Animation;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using AngleSharp.Parser.Html;
@@ -32,13 +33,20 @@ namespace VK_Downloader
 	public partial class MainWindow : MetroWindow
 	{
 		private readonly MainWindowViewModel _viewModel;
+		private readonly VkAuthProvider _authProvider;
 		private ProgressDialogController _parsingLinksDialogController;
 
 		public MainWindow()
 		{
+			_authProvider = new VkAuthProvider();
 			_viewModel = new MainWindowViewModel();
-			_viewModel.VkPostId = "8690656_223973";
 			_viewModel.FileModels = ConfigurationRepository.LoadFileList();
+
+			_authProvider.LoggedIn += _viewModel.LoggedIn;
+			_authProvider.LoggedOut += _viewModel.LoggedOut;
+
+			_authProvider.LoadSavedToken();
+
 			DataContext = _viewModel;
 			DesignInit();
 			InitializeComponent();
@@ -51,7 +59,20 @@ namespace VK_Downloader
 
 		private async void buttonDownload_Click(object sender, RoutedEventArgs e)
 		{
-			var parser = new VkParser { Id = _viewModel.VkPostId };
+			if (!_authProvider.IsLoggedIn)
+			{
+				await ShowSucceessDialog("No account provided", "You must login to Vk to be able to download audio files", "Ok");
+				return;
+			}
+
+			string id = string.Empty;
+			if (!VkParser.ParseId(_viewModel.VkPostId,ref id))
+			{
+				await ShowSucceessDialog("Wrong ID", "Please, provide ID in correct form", "Ok");
+				return;
+			}
+
+			var parser = new VkParser { Id = id, Token = _authProvider.Token };
 			_viewModel.StatusBarText = "Parsing links";
 			parser.DownloadCompleted += OnParsingComplete;
 			_parsingLinksDialogController =
@@ -61,8 +82,6 @@ namespace VK_Downloader
 					AnimateShow = true
 				});
 			_parsingLinksDialogController.SetIndeterminate();
-			VkDownloadLinkObtainer obt = new VkDownloadLinkObtainer("2000356709_456239124");
-			await obt.ObtainDownloadLink();
 			var result = await parser.ParseDownloadLinks();
 			_viewModel.FileModels.AddRange(result);
 			foreach(SongViewModel model in _viewModel.FileModels)
@@ -178,6 +197,62 @@ namespace VK_Downloader
 				return;
 			}
 			System.Diagnostics.Process.Start("explorer.exe", ConfigurationRepository.LoadDefaultDownloadFolderLocation());
+		}
+
+		private async void MenuItemLogin_OnClick(object sender, RoutedEventArgs e)
+		{
+			if (_authProvider.IsLoggedIn)
+			{
+				_authProvider.Logout();
+				await ShowSucceessDialog("Logout successful", "You're logged out", "Ok");
+				return;
+			}
+
+			var settings = new LoginDialogSettings()
+			{
+				ColorScheme = this.MetroDialogOptions.ColorScheme,
+				EnablePasswordPreview = true,
+				AnimateShow = true,
+				NegativeButtonVisibility = Visibility.Visible,
+				NegativeButtonText = "Cancel"
+			};
+
+			LoginDialogData res = await this.ShowLoginAsync("Login to you Vk Account", "Enter your credentials", settings);
+
+			if (res != null)
+			{
+				var settingsProg = new MetroDialogSettings()
+				{
+					AnimateShow = false,
+					AnimateHide = false,
+					ColorScheme = this.MetroDialogOptions.ColorScheme
+				};
+				ProgressDialogController controller = null;
+				try
+				{
+					controller = await this.ShowProgressAsync("Login progress", "Wait a moment...", false, settingsProg);
+					controller.SetIndeterminate();
+					await _authProvider.Login(res.Username, res.Password);
+					await controller.CloseAsync();
+					await ShowSucceessDialog("Login successful", $"Current username: {res.Username}", "Continue");
+				}
+				catch (Exception)
+				{
+					await controller?.CloseAsync();
+					await ShowSucceessDialog("Login failed", "Wrong username or password", "Cancel");
+				}
+			}
+		}
+
+		private async Task ShowSucceessDialog(string title, string message, string okText)
+		{
+			var settings = new MetroDialogSettings()
+			{
+				ColorScheme = this.MetroDialogOptions.ColorScheme,
+				AnimateShow = true,
+				AffirmativeButtonText = okText
+			};
+			await this.ShowMessageAsync(title, message, settings: settings);
 		}
 	}
 }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                

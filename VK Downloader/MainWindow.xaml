@@ -22,6 +22,7 @@
 			<RowDefinition Height="Auto"></RowDefinition>
 		</Grid.RowDefinitions>
 		<Menu x:Name="MainMenu" Grid.Row="0" Margin="5">
+			<MenuItem Header="{Binding LoginText}" Name="MenuItemLogin" Click="MenuItemLogin_OnClick"></MenuItem>
 			<MenuItem Header="Settings" Name="MenuItemSettings" Click="MenuItemSettings_OnClick"/>
 		</Menu>
 		<TextBox x:Name="TextBoxId" TextWrapping="NoWrap"  Margin="10,0,150,0" Grid.Row="1"

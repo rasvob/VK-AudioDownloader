@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using AngleSharp.Dom;
@@ -13,6 +14,7 @@ using AngleSharp.Dom.Html;
 using AngleSharp.Extensions;
 using AngleSharp.Parser.Html;
 using NReco.PhantomJS;
+using VK_Downloader.FileDownload;
 using VK_Downloader.ViewModels;
 
 namespace VK_Downloader.VK
@@ -25,59 +27,32 @@ namespace VK_Downloader.VK
 			set
 			{
 				_id = value;
-				_link = @"http://new.vk.com/wall-" + value;
-				_altLink = @"http://new.vk.com/wall" + value;
+				_link = @"http://new.vk.com/wall-" + _id;
+				_altLink = @"http://new.vk.com/wall" + _id;
 			}
 		}
 
 		private string _altLink;
 		private string _link;
 		private string _id;
+		public string Token { get; set; }
 
 		public event EventHandler DownloadCompleted;
 
 		public async Task<List<SongViewModel>> ParseDownloadLinks()
 		{
-			List<SongViewModel> links = new List<SongViewModel>();
-			//string content = await Task.Factory.StartNew(() => DownloadPage(_link));
 			string content = await GetParseContent();
 			var parser = new HtmlParser();
 			var document = parser.Parse(content);
 
-			//var trs = document.QuerySelectorAll("div.wall_audio_rows div.audio_row");
-			var trs = document.QuerySelectorAll("div.wall_audio_rows div.audio_row");
+			var trs = document.QuerySelectorAll("div.wall_audio_rows div.audio_row")
+				.Cast<IHtmlDivElement>()
+				.Where(t => !t.Dataset["audio"].Contains("deleteHash"))
+				.Select(s => s.Dataset["full-id"]);
 
+			var linkObtainer = new VkDownloadLinkObtainer(Token);
+			List<SongViewModel> links = await linkObtainer.ObtainDownloadLinks(trs);
 
-			var htmlElement = trs[0] as IHtmlDivElement;
-			var audio = htmlElement.Dataset["audio"];
-			var full_id = htmlElement.Dataset["full-id"];
-			var downloadLinkObtainer = new VkDownloadLinkObtainer(full_id);
-			var link = downloadLinkObtainer.ObtainDownloadLink();
-
-			foreach(IElement element in trs)
-			{
-				//var htmlElement = element as IHtmlDivElement;
-				//var audio = htmlElement.Dataset["audio"];
-				//var full_id = htmlElement.Dataset["full-id"];
-				//var downloadLinkObtainer = new VkDownloadLinkObtainer(full_id);
-				//var link = downloadLinkObtainer.ObtainDownloadLink();
-				try
-				{
-					var fileModel = new SongViewModel();
-
-					//fileModel.DownloadLink = input.Attributes.GetNamedItem("value").Value;
-					//fileModel.Artist = title?.InnerHtml;
-					//fileModel.SongName = songName?.InnerHtml;
-					links.Add(fileModel);
-				}
-				catch(Exception)
-				{
-					SongViewModel.NumberHolder--;
-				}
-
-			}
-
-			ClearDownloadLinks(ref links);
 			await Task.Factory.StartNew(() => GetFileSizesAndExtintions(links));
 			OnDownloadCompleted();
 			return links;
@@ -105,7 +80,7 @@ namespace VK_Downloader.VK
 
 		private async Task<string> GetParseContent()
 		{
-			var content = await Task.Factory.StartNew(() => DownloadPage(_link));
+			var content = await Task.Factory.StartNew(() => PhantomDownloader.DownloadPage(_link));
 			HtmlParser parser = new HtmlParser();
 			var document = parser.Parse(content);
 			var error = document.QuerySelector("div.message_page_title");
@@ -115,48 +90,39 @@ namespace VK_Downloader.VK
 			}
 			else 
 			{
-				content = await Task.Factory.StartNew(() => DownloadPage(_altLink));
+				content = await Task.Factory.StartNew(() => PhantomDownloader.DownloadPage(_altLink));
 			}
 			return content;
 		}
 
-		private string DownloadPage(string link)
+		public static bool ParseId(string text, ref string res)
 		{
-			PhantomJS phantomJs = new PhantomJS();
-			string content;
-			using(var outStream = new MemoryStream())
-			{
-				try
-				{
-					phantomJs.RunScript(
-						string.Format(
-							"var system = require('system'); var page = require('webpage').create(); page.open('{0}', function() {{ system.stdout.writeLine(page.content); phantom.exit(); }});",
-							link), null, null, outStream);
-					outStream.Seek(0, SeekOrigin.Begin);
-					using (StreamReader reader = new StreamReader(outStream))
-					{
-						content = reader.ReadToEnd();
-					}
-				}
-				finally
-				{
-					phantomJs.Abort();
-				}
-			}
-			return content;
-		}
 
-		private void ClearDownloadLinks(ref List<SongViewModel> links)
-		{
-			links.RemoveAll(t =>
+			Regex regexPureID = new Regex(@"^[0-9_]+$");
+			if(regexPureID.IsMatch(text))
 			{
-				Uri uri;
-				bool res = Uri.TryCreate(t.DownloadLink, UriKind.Absolute, out uri);
-				if (!res) return true;
-				return !(uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
-			});
+				res = text;
+				return true;
+			}
+
+			Regex start = new Regex(@"^(https:\/\/(new.)?vk.com)");
+			if (!start.IsMatch(text))
+			{
+				return false;
+			}
+
+			Regex regex = new Regex(@"(wall-?)([0-9|_]+).*");
+			Match match = regex.Match(text);
+
+			if (match.Success)
+			{
+				res = match.Groups[2].Value;
+				return true;
+			}
+
 			
 
+			return false;
 		}
 
 		protected virtual void OnDownloadCompleted()

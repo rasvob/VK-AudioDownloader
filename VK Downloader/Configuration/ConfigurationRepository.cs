@@ -10,6 +10,8 @@ namespace VK_Downloader.Configuration
 	{
 		private static string _fileListPath = "file_list.xml";
 		private static string _defaultFolderPath = "default_folder_location.xml";
+		private static string _tokeFilePath = "auth_token.xml";
+
 		public static void SaveFileList(List<SongViewModel> files)
 		{
 			using (FileStream fs = new FileStream(_fileListPath, FileMode.Create))
@@ -65,6 +67,33 @@ namespace VK_Downloader.Configuration
 		private static string GetDefaultDownloadsFolderLocation()
 		{
 			return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+		}
+
+		public static void SaveAuthToken(string token)
+		{
+			using(FileStream fs = new FileStream(_tokeFilePath, FileMode.Create))
+			{
+				XmlSerializer xmlSerializer = new XmlSerializer(typeof(string));
+				xmlSerializer.Serialize(fs, token);
+			}
+		}
+
+		public static string LoadAuthToken()
+		{
+			if (!File.Exists(_tokeFilePath))
+			{
+				return string.Empty;
+			}
+			using(FileStream fs = new FileStream(_tokeFilePath, FileMode.Open))
+			{
+				XmlSerializer xmlSerializer = new XmlSerializer(typeof(string));
+				var result = xmlSerializer.Deserialize(fs) as string;
+				if(result == null)
+				{
+					return string.Empty;
+				}
+				return result;
+			}
 		}
 	}
 }

@@ -29,7 +29,7 @@
     <ProductName>VK Downloader</ProductName>
     <PublisherName>rasvob</PublisherName>
     <OpenBrowserOnPublish>false</OpenBrowserOnPublish>
-    <ApplicationRevision>15</ApplicationRevision>
+    <ApplicationRevision>17</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -102,6 +102,10 @@
       <HintPath>..\packages\NReco.PhantomJS.1.0.3.0\lib\net40-Client\NReco.PhantomJS.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RestSharp.105.2.3\lib\net46\RestSharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -130,13 +134,17 @@
       <DependentUpon>SettingsWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Configuration\ConfigurationRepository.cs" />
+    <Compile Include="FileDownload\PhantomDownloader.cs" />
     <Compile Include="Logging\FileLogger.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
     <Compile Include="ViewModels\SettingsWindowViewModel.cs" />
     <Compile Include="ViewModels\SongViewModel.cs" />
+    <Compile Include="VK\Auth\StageOneData.cs" />
+    <Compile Include="VK\Auth\StageTwoData.cs" />
     <Compile Include="VK\FileModel.cs" />
     <Compile Include="VK\ProgressArgs.cs" />
+    <Compile Include="VK\Auth\VkAuthProvider.cs" />
     <Compile Include="VK\VkDownloader.cs" />
     <Compile Include="VK\VkDownloadLinkObtainer.cs" />
     <Compile Include="VK\VkParser.cs" />

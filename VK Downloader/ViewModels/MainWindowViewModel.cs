@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -12,6 +13,8 @@ namespace VK_Downloader.ViewModels
 		private string _vkPostId;
 		private string _statusBarText = "Ready";
 		private List<SongViewModel> _fileModels = new List<SongViewModel>();
+		private string _loginText = "Login";
+		private bool _isLoggedIn;
 
 		public string VkPostId
 		{
@@ -46,6 +49,37 @@ namespace VK_Downloader.ViewModels
 			}
 		}
 
+		public string LoginText
+		{
+			get { return _loginText; }
+			set
+			{
+				if (value == _loginText) return;
+				_loginText = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public bool IsLoggedIn
+		{
+			get { return _isLoggedIn; }
+			set
+			{
+				LoginText = value ? "Logout" : "Login";
+				_isLoggedIn = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public void LoggedIn(object sender, EventArgs args)
+		{
+			IsLoggedIn = true;
+		}
+
+		public void LoggedOut(object sender, EventArgs args)
+		{
+			IsLoggedIn = false;
+		}
 		public event PropertyChangedEventHandler PropertyChanged;
 
 		[NotifyPropertyChangedInvocator]
