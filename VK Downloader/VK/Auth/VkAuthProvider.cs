@@ -22,9 +22,9 @@ namespace VK_Downloader.VK
 		public string Token { get; set; }
 		public bool IsLoggedIn { get; set; } = false;
 
-		private readonly string _loginLink = @"https://new.vk.com/login";
+		private readonly string _loginLink = @"https://vk.com/login";
 		private readonly string _postReqBaseAddress = @"https://login.vk.com";
-		private readonly string _loginPhp = @"https://new.vk.com/login.php";
+		private readonly string _loginPhp = @"https://vk.com/login.php";
 
 		public event EventHandler LoggedIn;
 		public event EventHandler LoggedOut;

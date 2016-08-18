@@ -27,8 +27,8 @@ namespace VK_Downloader.VK
 			set
 			{
 				_id = value;
-				_link = @"http://new.vk.com/wall-" + _id;
-				_altLink = @"http://new.vk.com/wall" + _id;
+				_link = @"http://vk.com/wall-" + _id;
+				_altLink = @"http://vk.com/wall" + _id;
 			}
 		}
 

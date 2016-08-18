@@ -13,7 +13,7 @@ namespace VK_Downloader.VK
 {
 	public class VkDownloadLinkObtainer
 	{
-		private readonly string _baseUrl = @"https://new.vk.com/al_audio.php";
+		private readonly string _baseUrl = @"https://vk.com/al_audio.php";
 		public string Token { get; set; }
 
 		public VkDownloadLinkObtainer(string token)
